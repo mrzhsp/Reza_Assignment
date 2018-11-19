@@ -71,3 +71,12 @@ ggplot(data = forbes_country) +
   xlab("Country") +
   ylab("Difference between the highest and lowest net worth in each country") +
   coord_flip()
+
+# Part 2 - Q7) ------------------------------------------------------------
+forbes_rank <- forbes_filter %>% 
+  group_by(rank) %>% 
+  summarize(count = n()) %>% 
+  filter(count > 1)
+
+# As we can see, the data is first grouped by the ranks.
+# Then, we made a filter, keeping only those that have shared rankings.
