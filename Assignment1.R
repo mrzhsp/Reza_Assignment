@@ -17,8 +17,10 @@ library(rmarkdown)
 library(colorspace)
 library(readr)
 
-# Part 2 -----------------------------------------------------
-## Question 1
+# Part 2 - Q1) -----------------------------------------------------
 forbes_raw <- read.csv("forbes.csv")
 forbes_raw$rank <- parse_number(forbes_raw$rank)
 forbes_raw$net_worth <- parse_number(forbes_raw$net_worth)
+
+# Part 2 - Q2) ------------------------------------------------------------
+forbes_filter <- filter(forbes_raw, net_worth < 950)
