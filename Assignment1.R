@@ -53,3 +53,15 @@ forbes_country <- forbes_filter %>%
             dif_net_worth = max_net_worth - min_net_worth) %>% 
   filter(count >= 6) %>% 
   arrange((dif_net_worth))
+
+# Part 2 - Q5) ------------------------------------------------------------
+ggplot(data = forbes_country) +
+  geom_bar(mapping = aes(x = reorder(country, dif_net_worth), 
+                         y = dif_net_worth), 
+           stat = "identity", fill = "coral3") +
+  geom_text(mapping = aes(x = country, y = dif_net_worth),
+            label = forbes_country$dif_net_worth,
+            hjust = -.1, size = 2) +
+  xlab("Country") +
+  ylab("Difference between the highest and lowest net worth in each country") +
+  coord_flip()
