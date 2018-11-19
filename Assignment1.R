@@ -21,7 +21,11 @@ library(readr)
 forbes_raw <- read.csv("forbes.csv")
 forbes_raw$rank <- parse_number(forbes_raw$rank)
 forbes_raw$net_worth <- parse_number(forbes_raw$net_worth)
-forbes_raw$net_worth <- as.numeric(as.character(forbes_raw$net_worth))
+forbes_raw$age <- parse_integer(forbes_raw$age)
+
+length(which(is.na(forbes_raw$age)))
+
+# After doing so, we can see that 39 rows are missing because of NAs in age. 
 
 # Part 2 - Q2) ------------------------------------------------------------
 # In this question, I have filtered the data by the bellow function.
@@ -38,4 +42,14 @@ ggplot(data = forbes_filter) +
   geom_point(mapping = aes(x = age, y = log(net_worth)))
 
 # Considering the log of net_worth, the density of the points is better drawn.
-# ...
+# We can see the density of data more clearly.
+
+# Part 2 - Q4) ------------------------------------------------------------
+forbes_country <- forbes_filter %>% 
+  group_by(country) %>% 
+  summarize(count = n(),
+            max_net_worth = max(net_worth),
+            min_net_worth = min(net_worth),
+            dif_net_worth = max_net_worth - min_net_worth) %>% 
+  filter(count >= 6) %>% 
+  arrange((dif_net_worth))
