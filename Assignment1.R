@@ -77,6 +77,16 @@ forbes_rank <- forbes_filter %>%
   group_by(rank) %>% 
   summarize(count = n()) %>% 
   filter(count > 1)
+  
 
 # As we can see, the data is first grouped by the ranks.
 # Then, we made a filter, keeping only those that have shared rankings.
+
+# Part 2 - Q8) ------------------------------------------------------------
+forbes_mean_rank <- forbes_rank
+forbes_mean_rank <-  
+  mutate(forbes_mean_rank, end_rank = rank + count - 1)
+forbes_mean_rank <-
+  mutate(forbes_mean_rank, mean_rank = ((rank + end_rank)/2))
+
+# By adding two columns, the mean of the ranks have been computed.
