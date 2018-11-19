@@ -90,3 +90,17 @@ forbes_mean_rank <-
   mutate(forbes_mean_rank, mean_rank = ((rank + end_rank)/2))
 
 # By adding two columns, the mean of the ranks have been computed.
+
+# Part 2 - Q9) ------------------------------------------------------------
+forbes_country_worth <- forbes_filter %>% 
+  group_by(country) %>%
+  summarize(total_net_worth = log(sum(net_worth)))
+
+library(rworldmap)
+n <- joinCountryData2Map(forbes_country_worth, 
+                         joinCode="NAME", nameJoinColumn="country")
+mapCountryData(n, nameColumnToPlot="total_net_worth", 
+               mapTitle="Net Worth of Forbes list of richest people by country",
+               colourPalette="terrain",
+               addLegend=TRUE,
+               oceanCol="lightblue", missingCountryCol="grey")
