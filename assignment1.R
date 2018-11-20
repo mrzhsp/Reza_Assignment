@@ -37,9 +37,11 @@ length(which(is.na(forbes_raw$age)))
 forbes_filter <- filter(forbes_raw, net_worth < 950)
 forbes_filter$age_group <- forbes_filter$age
 b <- seq(10, 100, by = 10)
-forbes_filter$age_group <- cut(forbes_filter$age, breaks = b, 
-                               labels = seq(10, 90, by = 10), 
-                               na.rm = T)
+forbes_filter$age_group <- cut(forbes_filter$age,
+  breaks = b,
+  labels = seq(10, 90, by = 10),
+  na.rm = T
+)
 
 # Part 2 - Q3) ------------------------------------------------------------
 ggplot(data = forbes_filter) +
@@ -55,7 +57,7 @@ ggplot(
 {
   # Considering the log of net_worth, the density of the points is better drawn.
   # We can see the density of data more clearly.
-  }
+}
 
 # Part 2 - Q4) ------------------------------------------------------------
 forbes_country <-
@@ -107,7 +109,7 @@ forbes_rank <-
 {
   # As we can see, the data is first grouped by the ranks.
   # Then, we made a filter, keeping only those that have shared rankings.
-  }
+}
 # Part 2 - Q8) ------------------------------------------------------------
 forbes_mean_rank <- forbes_rank
 forbes_mean_rank <-
@@ -123,12 +125,12 @@ forbes_country_worth <-
   summarize(total_net_worth = log(sum(net_worth)))
 
 n <- joinCountryData2Map(forbes_country_worth,
-                         joinCode = "NAME", nameJoinColumn = "country"
+  joinCode = "NAME", nameJoinColumn = "country"
 )
 mapCountryData(n,
-               nameColumnToPlot = "total_net_worth",
-               mapTitle = "Net Worth of Forbes list of richest people by country",
-               colourPalette = "terrain",
-               addLegend = TRUE,
-               oceanCol = "lightblue", missingCountryCol = "grey"
+  nameColumnToPlot = "total_net_worth",
+  mapTitle = "Net Worth of Forbes list of richest people by country",
+  colourPalette = "terrain",
+  addLegend = TRUE,
+  oceanCol = "lightblue", missingCountryCol = "grey"
 )
