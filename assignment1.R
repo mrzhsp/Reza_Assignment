@@ -35,15 +35,20 @@ length(which(is.na(forbes_raw$age)))
   # These can be deleted to prevent distortion in our data.
 }
 forbes_filter <- filter(forbes_raw, net_worth < 950)
+forbes_filter$age_group <- forbes_filter$age
+b <- seq(10, 100, by = 10)
+forbes_filter$age_group <- cut(forbes_filter$age, breaks = b, 
+                               labels = seq(10, 90, by = 10), 
+                               na.rm = T)
 
 # Part 2 - Q3) ------------------------------------------------------------
 ggplot(data = forbes_filter) +
-  geom_point(mapping = aes(x = age, y = net_worth))
+  geom_point(mapping = aes(x = age, y = net_worth, color = age_group))
 
 # Now the same question with log(net_worth)
 ggplot(
   data = forbes_filter,
-  mapping = aes(x = age, y = log(net_worth))
+  mapping = aes(x = age, y = log(net_worth), color = age_group)
 ) +
   geom_point() +
   geom_smooth()
