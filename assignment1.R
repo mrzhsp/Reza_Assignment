@@ -134,3 +134,4 @@ mapCountryData(n,
   addLegend = TRUE,
   oceanCol = "lightblue", missingCountryCol = "grey"
 )
+# The End.
