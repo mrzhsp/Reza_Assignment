@@ -4,9 +4,33 @@ library(tidyverse)
 # Question 1 ------------------------------------------------------------------------------------------------------
 
 
+#' Tidy data for prefix
+#'
+#' @param data 
+#' @param column_prefix 
+#'
+#' @return A tidy dataframe based on the designated criteria
+#' @export 
+#'
+#' @examples 
 tidy_df <- function(data, column_prefix = "var"){
-  
+  x <- str_subset(colnames(data), "^var")
+  gather(data, x,
+           key = "variable", value = "value")
 }
+
+# This is a function that I came up with. 
+# I have designed a vector "x" that can read the column names from the dataset.
+# Afterwards, it will match for what has been assigned in x. 
+# Then, the gathering will work and it tries to tidy the data.
+# As an example, bellow we can see how it works in "flights" dataset.
+tidy_df <- function(data, column_prefix = "dep"){
+  x <- str_subset(colnames(data), "^dep")
+  gather(data, x,
+         key = "variable", value = "value")
+}
+example <- tidy_df(flights)
+
 
 
 # Question 2 ------------------------------------------------------------------------------------------------------
