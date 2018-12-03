@@ -30,7 +30,7 @@ tidy_df <- function(data, column_prefix = "dep"){
          key = "variable", value = "value")
 }
 example <- tidy_df(flights)
-
+library(nycflights13)
 
 
 # Question 2 ------------------------------------------------------------------------------------------------------
@@ -51,9 +51,30 @@ get_jane_austen_data <- function(){
   assign("austen_text", austen_text, envir=.GlobalEnv)
   invisible()
 }
+get_jane_austen_data()
+View(austen_text)
+#----------
+data1 <- austen_text
 
+data1$a <- sapply(str_extract_all(data1$text, 
+                                  '\\b[A-Z]\\w+'), paste, collapse = ' ')
+data1$b <- str_count(data1$a, '\\w+')
+max(data1$b)
+x <- c(paste("var", 1:12, sep = ""))
+data1 <- separate(data1, a, x, sep = " ", remove = TRUE)
+
+tidy_df <- function(data, column_prefix = "var"){
+  x <- str_subset(colnames(data), "^var")
+  gather(data, x,
+         key = "variable", value = "value")
+}
+data2 <- tidy_df(data1)
+View(data2)
+#----------
 # extract_possible_names 
-
+extract_possible_names <- function(data) {
+  
+}
 
 
 
