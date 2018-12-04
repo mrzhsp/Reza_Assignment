@@ -32,8 +32,6 @@ tidy_df <- function(data, column_prefix = "dep"){
 library(nycflights13)
 example <- tidy_df(flights)
 
-
-
 # Question 2 ------------------------------------------------------------------------------------------------------
 
 #' Get the Jane Austen data
@@ -56,20 +54,32 @@ get_jane_austen_data()
 View(austen_text)
 #----------
 
-extract_possible_names <- function(data3){
-  data3 <- mutate(data3, a = sapply(str_extract_all(data3$text, 
-                           '\\b[A-Z]\\w+'), paste, collapse = ' '))
+extract_possible_names <- function(data, text_col){
+  extracted_data <- data
+  extracted_data <- mutate(extracted_data,
+                           cap_words = 
+                             sapply(str_extract_all(extracted_data[[text_col]], 
+                           '\\b[A-Z]\\w+'), paste, collapse = ' ')) 
+  extracted_data <- mutate(extracted_data, 
+                           numberof_cap_words = 
+                             str_count(extracted_data$cap_words, '\\w+'))
+  max_cap_words <- max(extracted_data$numberof)
+  x <- c(paste("var", 1:12, sep = ""))
+  extracted_data <- separate(extracted_data, cap_words, x, sep = " ", remove = TRUE)
 }
-example2 <- extract_possible_names(austen_text)
+example2 <- extract_possible_names(austen_text, "text")
 View(example2)
+remove(example2)
 
-data1 <- austen_text
-data1$a <- sapply(str_extract_all(data1$text, 
-                                  '\\b[A-Z]\\w+'), paste, collapse = ' ')
-data1$b <- str_count(data1$a, '\\w+')
-max(data1$b)
-x <- c(paste("var", 1:12, sep = ""))
-data1 <- separate(data1, a, x, sep = " ", remove = TRUE)
+
+
+# data1 <- austen_text
+# data1$a <- sapply(str_extract_all(data1$text, 
+# '\\b[A-Z]\\w+'), paste, collapse = ' ')
+# data1$b <- str_count(data1$a, '\\w+')
+# max(data1$b)
+# x <- c(paste("var", 1:12, sep = ""))
+# data1 <- separate(data1, a, x, sep = " ", remove = TRUE)
 
 tidy_df <- function(data, column_prefix = "var"){
   x <- str_subset(colnames(data), "^var")
