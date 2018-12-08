@@ -3,7 +3,6 @@ library(tidyverse)
 
 # Question 1 ------------------------------------------------------------------------------------------------------
 
-
 #' Tidy data for prefix
 #'
 #' @param data
@@ -109,6 +108,17 @@ View(austen_cap_words)
 austen_word_freqs <- readRDS("austen_word_freqs.Rds")
 
 # filter_names
+#' Title
+#'
+#' @param data The output from previous question namely "austen_cap_words"
+#' @param reference The reference database which contains the count of words.
+#' @param word_col The columns by which the whole comparison, joining, and
+#'                 tidying will go into effect. 
+#'
+#' @return
+#' @export
+#'
+#' @examples
 filter_names <- function(data, reference, word_col) {
   changed_data <- data
   changed_data$lower_words <- tolower(data[[word_col]])
@@ -122,7 +132,13 @@ filter_names <- function(data, reference, word_col) {
   changed_data %>%
     rename(word = lower_words) %>%
     inner_join(summarized_data, by = "word") %>%
-    filter(percentage >= 75)
+    filter(percentage >= 75) %>%
+# I have noticed that there are particular addressing pronouns in the data.
+# To have the correct list of Names, I thought that I should omit these.
+    filter(word != "sir") %>% 
+    filter(word != "mrs") %>% 
+    filter(word != "miss") %>% 
+    filter(word != "mr")
 }
 
 filtered_words <- filter_names(austen_cap_words, austen_word_freqs, "name")
@@ -132,3 +148,19 @@ View(filtered_words)
 # Question 4 ------------------------------------------------------------------------------------------------------
 
 # count_names_per_book
+count_names_per_book <- function(data, data_counts) {
+  extracted_data <- data %>%
+    select(title, id) %>% 
+    rename(text_id = id)
+  
+  joined_data <- inner_join(extracted_data, filtered_words, by = "text_id") %>% 
+    select(title, text_id, name, id)
+  
+  names_per_book <- joined_data %>% 
+    group_by(title) %>% 
+    summarize(unique_names = length(unique(name)), name_occurrences = n())
+}
+
+filtered_names <- count_names_per_book(austen_text, filtered_words)
+View(filtered_names)
+
