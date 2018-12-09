@@ -178,6 +178,19 @@ View(filtered_words)
 # Question 4 -------------------------------------------------------------------
 
 # count_names_per_book
+#'
+#' @param data The original data.
+#' @param data_counts The data from the previous question which contains the 
+#'                    calculation for the percentage of words.
+#'
+#' @return A table with three columns namely "title, unique_names, 
+#'         name_occurences". The "title" contains the title of the book by the
+#'         author. The "unique_name" contains the number of unique names per 
+#'         book. The "name_occurences" contains the total number of name
+#'         occurrences per book.
+#' @export
+#'
+#' @examples
 count_names_per_book <- function(data, data_counts) {
   extracted_data <- data %>%
     select(title, id) %>%
@@ -193,3 +206,9 @@ count_names_per_book <- function(data, data_counts) {
 
 filtered_names <- count_names_per_book(austen_text, filtered_words)
 View(filtered_names)
+#' Answer to questions in Q4:
+#' We can see from this table that the book "The Complete Project Gutenberg 
+#'   Works of Jane Austen A Linked Index of all PG Editions of Jane Austen"
+#'   contains the highest number of unique names.
+#'   
+#' We can also see that the same book has the most occurences of names. 
