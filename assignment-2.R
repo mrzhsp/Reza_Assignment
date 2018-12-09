@@ -1,39 +1,41 @@
+#' Title: Assignment 2 - R Programming Course
+#' Author: Mohamadreza Hoseinpour
+
+# Loading Libraries ------------------------------------------------------------
 library(tidyverse)
 
-
-# Question 1 ------------------------------------------------------------------------------------------------------
+# Question 1 -------------------------------------------------------------------
 
 #' Tidy data for prefix
 #'
-#' @param data
-#' @param column_prefix
+#' @param data The dataframe as the input.
+#' @param column_prefix the column based on which the tidying will happen.
 #'
 #' @return A tidy dataframe based on the designated criteria
 #' @export
 #'
-#' @examples
+#' @examples 
 tidy_df <- function(data, column_prefix = "var") {
   x <- str_subset(colnames(data), "^var")
   gather(data, x, key = "variable", value = "value")
 }
 
-# This is a function that I came up with.
-# I have designed a vector "x" that can read the column names from the dataset.
-# Afterwards, it will match for what has been assigned in x.
-# Then, the gathering will work and it tries to tidy the data.
-# As an example, bellow we can see how it works in "flights" dataset.
-tidy_df <- function(data, column_prefix = "dep") {
-  x <- str_subset(colnames(data), "^dep")
-  gather(data, x,
-    key = "variable", value = "value"
-  )
-}
-library(nycflights13)
-example <- tidy_df(flights)
-View(flights)
-View(example)
+#' This is a function that I came up with.
+#'   I have designed a vector "x" that can read the column names from the dataset.
+#'   Afterwards, it will match for what has been assigned in x.
+#'   Then, the gathering will work and it tries to tidy the data.
+#'   As an example, bellow we can see how it works in "flights" dataset.
+#'   
+#' tidy_df <- function(data, column_prefix = "dep") {
+#'  x <- str_subset(colnames(data), "^dep")
+#'  gather(data, x, key = "variable", value = "value")
+#' }
+#' library(nycflights13)
+#' example <- tidy_df(flights)
+#' View(flights)
+#' View(example)
 
-# Question 2 ------------------------------------------------------------------------------------------------------
+# Question 2 -------------------------------------------------------------------
 
 #' Get the Jane Austen data
 #'
@@ -104,7 +106,7 @@ austen_cap_words <- extract_possible_names(austen_text, "text", "id")
 View(austen_cap_words)
 
 
-# Question 3 ------------------------------------------------------------------------------------------------------
+# Question 3 -------------------------------------------------------------------
 austen_word_freqs <- readRDS("austen_word_freqs.Rds")
 
 # filter_names
@@ -113,7 +115,7 @@ austen_word_freqs <- readRDS("austen_word_freqs.Rds")
 #' @param data The output from previous question namely "austen_cap_words"
 #' @param reference The reference database which contains the count of words.
 #' @param word_col The columns by which the whole comparison, joining, and
-#'                 tidying will go into effect. 
+#'                 tidying will go into effect.
 #'
 #' @return
 #' @export
@@ -133,11 +135,11 @@ filter_names <- function(data, reference, word_col) {
     rename(word = lower_words) %>%
     inner_join(summarized_data, by = "word") %>%
     filter(percentage >= 75) %>%
-# I have noticed that there are particular addressing pronouns in the data.
-# To have the correct list of Names, I thought that I should omit these.
-    filter(word != "sir") %>% 
-    filter(word != "mrs") %>% 
-    filter(word != "miss") %>% 
+    # I have noticed that there are particular addressing pronouns in the data.
+    # To have the correct list of Names, I thought that I should omit these.
+    filter(word != "sir") %>%
+    filter(word != "mrs") %>%
+    filter(word != "miss") %>%
     filter(word != "mr")
 }
 
@@ -145,22 +147,21 @@ filtered_words <- filter_names(austen_cap_words, austen_word_freqs, "name")
 View(filtered_words)
 
 
-# Question 4 ------------------------------------------------------------------------------------------------------
+# Question 4 -------------------------------------------------------------------
 
 # count_names_per_book
 count_names_per_book <- function(data, data_counts) {
   extracted_data <- data %>%
-    select(title, id) %>% 
+    select(title, id) %>%
     rename(text_id = id)
-  
-  joined_data <- inner_join(extracted_data, filtered_words, by = "text_id") %>% 
+
+  joined_data <- inner_join(extracted_data, filtered_words, by = "text_id") %>%
     select(title, text_id, name, id)
-  
-  names_per_book <- joined_data %>% 
-    group_by(title) %>% 
+
+  names_per_book <- joined_data %>%
+    group_by(title) %>%
     summarize(unique_names = length(unique(name)), name_occurrences = n())
 }
 
 filtered_names <- count_names_per_book(austen_text, filtered_words)
 View(filtered_names)
-
