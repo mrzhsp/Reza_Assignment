@@ -116,31 +116,46 @@ extract_possible_names <- function(data, text_col, id_col) {
   finished_data <- select(changed_data, text_id, name, id)
   finished_data[!is.na(finished_data$name), ]
 }
+#' For some reasons, piping was not working when I was designing this code. 
+#'   Hence, I had to go forward with assignment of variables to have this 
+#'   function working, taking into consideration all of its components and 
+#'   the way of analyzing and tidying the data.
 austen_cap_words <- extract_possible_names(austen_text, "text", "id")
 View(austen_cap_words)
 
 
 # Question 3 -------------------------------------------------------------------
 austen_word_freqs <- readRDS("austen_word_freqs.Rds")
+#' This code is used to read the data provided in the assignment, as the 
+#'   reference for tidying the data. 
 
 # filter_names
-#' Title
 #'
 #' @param data The output from previous question namely "austen_cap_words"
 #' @param reference The reference database which contains the count of words.
 #' @param word_col The columns by which the whole comparison, joining, and
 #'                 tidying will go into effect.
 #'
-#' @return
+#' @return A comprehensive table containing "text_id" which is the original id 
+#'         from the data in previous question. "name" is the column which 
+#'         contains the capital words. "id" is the unique id to each capital
+#'         word. "word" is the column containing the word from the reference 
+#'         dataset. The other three columns contain the numbers of each name 
+#'         repeated and the calculation pertaining to the percentage of each 
+#'         word's apperance in the original data.
 #' @export
 #'
 #' @examples
 filter_names <- function(data, reference, word_col) {
   changed_data <- data
   changed_data$lower_words <- tolower(data[[word_col]])
+#' I had to convert the words into lowercase so that I can compare the words to
+#'   those in the reference dataset, and then make a new datafram by joining the
+#'   datasets. Then the rest of the computation take place. For this to happen,
+#'   a grouping and summarizing will happen.
   summarized_data <- changed_data %>%
     group_by(lower_words) %>%
-    summarise(numberof_times_repeated = n()) %>%
+    summarize(numberof_times_repeated = n()) %>%
     rename(word = lower_words) %>%
     inner_join(reference, by = "word") %>%
     mutate(percentage = (numberof_times_repeated / count) * 100)
@@ -149,17 +164,16 @@ filter_names <- function(data, reference, word_col) {
     rename(word = lower_words) %>%
     inner_join(summarized_data, by = "word") %>%
     filter(percentage >= 75) %>%
-    # I have noticed that there are particular addressing pronouns in the data.
-    # To have the correct list of Names, I thought that I should omit these.
+#' I have noticed that there are particular addressing pronouns in the data.
+#'   To have the correct list of Names, I thought that I should omit these. To 
+#'   do this, I used lowercase words from the reference dataframe.
     filter(word != "sir") %>%
     filter(word != "mrs") %>%
     filter(word != "miss") %>%
     filter(word != "mr")
 }
-
 filtered_words <- filter_names(austen_cap_words, austen_word_freqs, "name")
 View(filtered_words)
-
 
 # Question 4 -------------------------------------------------------------------
 
