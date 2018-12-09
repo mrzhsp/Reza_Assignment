@@ -59,6 +59,10 @@ get_jane_austen_data <- function() {
 }
 get_jane_austen_data()
 View(austen_text)
+#' Until the lest moment and last time I was working on this assignment, which 
+#'   was on Sunday, December 9th, at 02:47, this block was working properly. But
+#'   after that, it stops at fetching the data from the database. I could not 
+#'   figure out what was the problem.
 
 #----------
 
