@@ -59,6 +59,7 @@ get_jane_austen_data <- function() {
 }
 get_jane_austen_data()
 View(austen_text)
+
 #----------
 
 #' Extract capital words
@@ -68,9 +69,9 @@ View(austen_text)
 #' @param id_col the column which contains the initial id in the dataframe
 #'
 #' @return A table with three columns "text_id, name, id"
-#' "text_id" contains the original id from the dataframe.
-#' "name" contains each capwords that was extracted from each row of dataframe.
-#' "id" contains a unique id for every capwords.
+#'   "text_id" contains the original id from the dataframe.
+#'   "name" contains each capwords that was extracted from each row of dataframe.
+#'   "id" contains a unique id for every capwords.
 #' @export
 #'
 #' @examples
@@ -83,19 +84,32 @@ extract_possible_names <- function(data, text_col, id_col) {
         "\\b[A-Z]\\w+"
       ), paste, collapse = " ")
   )
+#' This code is used to extract the capital words from the text.
+
   extracted_data <- mutate(extracted_data,
     numberof_cap_words =
       str_count(extracted_data$cap_words, "\\w+")
   )
+
+#' This code is used to count the number of capital word. Afterwards, 
+#'   the maximum number of words will be used to come up with proper number of 
+#'   columns. Hence, the capital words can be separated into separate columns.
   max_cap_words <- max(extracted_data$numberof_cap_words)
   x <- c(paste("var", 1:max_cap_words, sep = ""))
   extracted_data <- separate(extracted_data, cap_words, x,
     sep = " ",
     remove = TRUE
   )
-  #  extracted_data <- rename(extracted_data, text_id = id_col, name = value)
-  #  changed_data <- tidy_df(extracted_data)
+  
+#' From here forward, the "tidy_df" function will be used to tidy the data.
+#'   Also, a rename of the id will take into effect and a handful of columns
+#'   will be selected. At the end, all rows which contain "NA"s in all columns
+#'   of variables, indicating the existence of capital words, will be removed.
+
   extracted_data <- mutate_if(extracted_data, is_character, funs(na_if(., "")))
+#' I have used this special line of code to convert "NULL" rows in the first
+#'   column "var1" into "NA"s so that I can omit the "NA"s afterward.
+
   changed_data <- tidy_df(extracted_data)
   changed_data <- rename(changed_data, text_id = id_col, name = value)
   changed_data <- mutate(changed_data, id = rownames(changed_data))
