@@ -3,25 +3,73 @@ library(xml2)
 library(RCurl)
 base_url <- "https://www.cia.gov/library/publications/the-world-factbook/"
 
-
+# Q1 - Answer -------------------------------------------------------------
 #' Question 1: Get Population Ranking
 #'
-#' @return
+#' @param base_url The URL as the input.
+#'
+#' @return A tidy dataframe including 4 columns.
+#'   "country_link" contains the link to each country in the webpage.
+#'   "country" contains the name of the respective country.
+#'   "population" contains the population of each country.
+#'   "rank.population" contains the respective rankd of each country based on
+#'     population.
 #' @export
 #'
 #' @examples
-get_population_ranking <- function(){
+get_population_ranking <- function(base_url){
   xpath_expressions <- c("country_link" = "//td[@class='region']/a/@href",
                          "country" = "//td[@class='region']/a",
                          "value" = "//tr/td[3]",
                          "rank" = "//tr/td[1]")
   url = str_c(base_url, "fields/335rank.html")
   #download url and execute all XPath queries which will each return a column for a data_frame
-  
+  raw_html <- read_html(getURL(url,
+                               .encoding = "UTF-8",
+                               .opts = list(followlocation = FALSE)))
+  # I have used an iteration to put all the links as a list. 
+  raw_list <- vector("list", length(xpath_expressions))
+  for(i in seq_along(xpath_expressions)) {
+    raw_list[[i]] <- xml_find_all(raw_html, xpath_expressions[i])
+  }
   #make the necessary adjustments to the data frame as given by the assignment
+  raw_data <- data.frame(country_link = sapply(output[1], xml_text),
+                         country = c(sapply(output[2], xml_text)), 
+                         population = c(sapply(output[3], xml_text)),
+                         rank.population = c(sapply(output[4],xml_text)))
+  raw_data$country_link <- lapply(raw_data$country_link, gsub, pattern = '../', replacement = '')
+  View(all_data)
 }
+example <- get_population_ranking(base_url)
 
+# Q1 - Testing without function -------------------------------------------
+# In this section, I created the code and wanted to test whether it is working
+#   outside the function, and then I inserted the code into the above function.
+#xpath_expressions <- c("country_link" = "//td[@class='region']/a/@href",
+#                       "country" = "//td[@class='region']/a",
+#                       "value" = "//tr/td[3]",
+#                       "rank" = "//tr/td[1]")
+#url = str_c(base_url, "fields/335rank.html")
 
+#raw_html <- read_html(getURL(url,
+#                             .encoding = "UTF-8",
+#                             .opts = list(followlocation = FALSE)))
+
+#output <- vector("list", length(xpath_expressions))
+#for(i in seq_along(xpath_expressions)) {
+#  output[[i]] <- xml_find_all(raw_html, xpath_expressions[i])
+#}
+#output
+#View(output)
+
+#all_data <- data.frame(country_link = sapply(output[1], xml_text),
+#                       country = c(sapply(output[2], xml_text)), 
+#                       population = c(sapply(output[3], xml_text)),
+#                       rank.population = c(sapply(output[4],xml_text)))
+#all_data$country_link <- lapply(all_data$country_link, gsub, pattern='../', replacement='')
+#View(all_data)
+
+# Q2 - Answer -------------------------------------------------------------
 #' Question 2: Retrieve Land Area
 #'
 #' @param country_link A character vector of one or more country_link urls
