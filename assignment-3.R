@@ -33,14 +33,15 @@ get_population_ranking <- function(base_url){
     raw_list[[i]] <- xml_find_all(raw_html, xpath_expressions[i])
   }
   #make the necessary adjustments to the data frame as given by the assignment
-  raw_data <- data.frame(country_link = sapply(output[1], xml_text),
-                         country = c(sapply(output[2], xml_text)), 
-                         population = c(sapply(output[3], xml_text)),
-                         rank.population = c(sapply(output[4],xml_text)))
-  raw_data$country_link <- lapply(raw_data$country_link, gsub, pattern = '../', replacement = '')
-  View(all_data)
+  raw_data <- data.frame(country_link = sapply(raw_list[1], xml_text),
+                         country = c(sapply(raw_list[2], xml_text)), 
+                         population = c(sapply(raw_list[3], xml_text)),
+                         rank.population = c(sapply(raw_list[4],xml_text)))
+  raw_data$country_link <- lapply(raw_data$country_link, 
+                                  gsub, pattern = "^\\W+", replacement = '')
+  return(raw_data)
 }
-example <- get_population_ranking(base_url)
+example1 <- get_population_ranking(base_url)
 
 # Q1 - Testing without function -------------------------------------------
 # In this section, I created the code and wanted to test whether it is working
@@ -73,17 +74,63 @@ example <- get_population_ranking(base_url)
 #' Question 2: Retrieve Land Area
 #'
 #' @param country_link A character vector of one or more country_link urls
+#' @param data The dataset that is used as the input
 #'
-#' @return
-#' @export
+#' @return A character vector
+#'   
+#' @export 
 #'
 #' @examples
-get_land_area <- function(country_link){
+get_land_area <- function(data, country_link){
   xpath <- str_c("//div[@id='","field-area","']/div[",2,"]/span[2]")
   #download the file from country_link and execute the xpath query
+  url2 = str_c(base_url, data$country_link)
+  land_data <- c()
+  for(i in 1:length(data$country_link)) {
+     raw_html2 <- read_html(download_html(url2[i]))
+#    raw_html2 <- read_html(getURL(url2[i],
+#                                  .encoding = "UTF-8",
+#                                  .opts = list(followlocation = FALSE)))
+# Apparently, the speed of retrieving the data with the reading function used is
+#  better than then one bellow. Thay is why I have changed it.     
+    raw_list_land <- xml_find_all(raw_html2, xpath)
+    land_data[i] <- xml_text(raw_list_land)
+  }
+  return(land_data)
 }
+example2 <- get_land_area(example1, "country_link")
 
+# Q2 - Testing without function -------------------------------------------
+#xpath <- str_c("//div[@id='","field-area","']/div[",2,"]/span[2]")
+#url2 = str_c(base_url, "geos/ch.html")
+#raw_html2 <- read_html(getURL(url2,
+#                             .encoding = "UTF-8",
+#                             .opts = list(followlocation = FALSE)))
+#land_area <- xml_find_all(raw_html2, xpath)
+#output2 <- xml_text(land_area)
+#output2
 
+#xpath <- str_c("//div[@id='","field-area","']/div[",2,"]/span[2]")
+#url2 = str_c(base_url, example1$country_link)
+#raw_list_land <- vector("list", length(example1$country_link))
+#land_data <- c()
+#for(i in 1:3) {
+#  raw_html2 <- read_html(getURL(url2[i],
+#                                .encoding = "UTF-8",
+#                                .opts = list(followlocation = FALSE)))
+#  raw_list_land <- xml_find_all(raw_html2, xpath)
+#  land_data[i] <- xml_text(raw_list_land)
+#}
+#View(land_data)
+
+#for(i in seq_along(example1)) {
+#  raw_list_land[[i]] <- xml_find_all(raw_html2, xpath)
+#  area <- xml_text(raw_list_land)
+#}
+#land_area <- xml_find_all(raw_html, xpath)
+#output2 <- xml_text(land_area)
+
+# Q3 - Answer -------------------------------------------------------------
 #' Question 3: Get Population Density
 #'
 #' @return
