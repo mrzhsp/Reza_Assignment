@@ -41,7 +41,7 @@ get_population_ranking <- function(base_url){
                                   gsub, pattern = "^\\W+", replacement = '')
   return(raw_data)
 }
-example1 <- get_population_ranking(base_url)
+country_pop <- get_population_ranking(base_url)
 
 # Q1 - Testing without function -------------------------------------------
 # In this section, I created the code and wanted to test whether it is working
@@ -92,13 +92,14 @@ get_land_area <- function(data, country_link){
 #                                  .encoding = "UTF-8",
 #                                  .opts = list(followlocation = FALSE)))
 # Apparently, the speed of retrieving the data with the reading function used is
-#  better than then one bellow. Thay is why I have changed it.     
+#  better than then one above. Thay is why I have changed it to
+#  read_html(download_html)
     raw_list_land <- xml_find_all(raw_html2, xpath)
     land_data[i] <- xml_text(raw_list_land)
   }
   return(land_data)
 }
-example2 <- get_land_area(example1, "country_link")
+land_area <- get_land_area(country_pop, "country_link")
 
 # Q2 - Testing without function -------------------------------------------
 #xpath <- str_c("//div[@id='","field-area","']/div[",2,"]/span[2]")
@@ -133,15 +134,34 @@ example2 <- get_land_area(example1, "country_link")
 # Q3 - Answer -------------------------------------------------------------
 #' Question 3: Get Population Density
 #'
-#' @return
+#' @return A tidy dataframe including 4 columns from the first function. and
+#'   "land_area" including the land of each country in sq km.
+#'   "population_density" including the density of each country.
 #' @export
 #'
 #' @examples
 get_population_density <- function(){
-  
+  country_pop_land <- cbind(country_pop, land_area)
+  country_pop_land$land_area <- parse_number(country_pop_land$land_area)
+  country_pop_land[12, "land_area"] <- 1000000 
+  country_pop_land$population <- parse_number(country_pop_land$population)
+  country_pop_land <- mutate(country_pop_land,
+                             population_density = population / land_area)
+  View(country_pop_land)
 }
+country_pop_land <- get_population_density()
+
+# Q3 - Testing without function -------------------------------------------
+#country_pop_land <- cbind(country_pop, land_area)
+#country_pop_land$land_area <- parse_number(country_pop_land$land_area)
+#country_pop_land[12, "land_area"] <- 1000000 
+#country_pop_land$population <- parse_number(country_pop_land$population)
+#country_pop_land <- mutate(country_pop_land,
+#                           population_density = population / land_area)
+#View(country_pop_land)
 
 
+# Q4 - Answer -------------------------------------------------------------
 #' Question 4: Get All Provided Rankings
 #'
 #' @return
