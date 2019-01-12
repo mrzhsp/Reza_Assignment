@@ -148,6 +148,7 @@ get_population_density <- function(){
   country_pop_land <- mutate(country_pop_land,
                              population_density = population / land_area)
   View(country_pop_land)
+  return(country_pop_land)
 }
 country_pop_land <- get_population_density()
 
@@ -169,12 +170,51 @@ country_pop_land <- get_population_density()
 #'
 #' @examples
 get_rankings <- function(){
-  url <- "https://www.cia.gov/library/publications/the-world-factbook/docs/rankorderguide.html"
+  url3 <- "https://www.cia.gov/library/publications/the-world-factbook/docs/rankorderguide.html"
   xpath <- c("characteristic" = "//div[@class='field_label']/strong/a",
              "characteristic_link" = "//div[@class='field_label']/strong/a/@href")
-  #...
+  ranking_html <- read_html(getURL(url3,
+                                   .encoding = "UTF-8",
+                                   .opts = list(followlocation = FALSE)))
+  ranking_list <- vector("list", length(xpath))
+  for(i in seq_along(xpath)) {
+    ranking_list[[i]] <- xml_find_all(ranking_html, xpath[i])
+  }
+  View(ranking_list)
+  
+  ranking_data <- data.frame(characteristic = sapply(ranking_list[1], xml_text),
+                             characteristic_link = c(sapply(ranking_list[2], xml_text)))
+  ranking_data$characteristic_link <- lapply(ranking_data$characteristic_link, 
+                                             gsub, pattern = "^\\W+", replacement = '')
+  ranking_data$characteristic <- lapply(ranking_data$characteristic,
+                                        gsub, pattern = "\\:$", replacement = "")
+  ranking_data$characteristic <- tolower(ranking_data$characteristic)
+  View(ranking_data)
+  return(ranking_data)
 }
+ranking_data <- get_rankings()
 
+# Q4 - Testing without function -------------------------------------------
+url3 <- "https://www.cia.gov/library/publications/the-world-factbook/docs/rankorderguide.html"
+xpath <- c("characteristic" = "//div[@class='field_label']/strong/a",
+           "characteristic_link" = "//div[@class='field_label']/strong/a/@href")
+ranking_html <- read_html(getURL(url3,
+                             .encoding = "UTF-8",
+                             .opts = list(followlocation = FALSE)))
+ranking_list <- vector("list", length(xpath))
+for(i in seq_along(xpath)) {
+  ranking_list[[i]] <- xml_find_all(ranking_html, xpath[i])
+}
+View(ranking_list)
+
+ranking_data <- data.frame(characteristic = sapply(ranking_list[1], xml_text),
+                       characteristic_link = c(sapply(ranking_list[2], xml_text)))
+ranking_data$characteristic_link <- lapply(ranking_data$characteristic_link, 
+                                gsub, pattern = "^\\W+", replacement = '')
+ranking_data$characteristic <- lapply(ranking_data$characteristic,
+                                      gsub, pattern = "\\:$", replacement = "")
+ranking_data$characteristic <- tolower(ranking_data$characteristic)
+View(ranking_data)
 
 #' Question 5 - Part 1: Get Ranking
 #'
