@@ -1,6 +1,7 @@
 library(tidyverse)
 library(xml2)
 library(RCurl)
+library(dplyr)
 base_url <- "https://www.cia.gov/library/publications/the-world-factbook/"
 
 # Q1 - Answer -------------------------------------------------------------
@@ -17,14 +18,14 @@ base_url <- "https://www.cia.gov/library/publications/the-world-factbook/"
 #' @export
 #'
 #' @examples
-get_population_ranking <- function(base_url){
+get_population_ranking <- function(){
   xpath_expressions <- c("country_link" = "//td[@class='region']/a/@href",
                          "country" = "//td[@class='region']/a",
                          "value" = "//tr/td[3]",
                          "rank" = "//tr/td[1]")
-  url = str_c(base_url, "fields/335rank.html")
+  url1 = str_c(base_url, "fields/335rank.html")
   #download url and execute all XPath queries which will each return a column for a data_frame
-  raw_html <- read_html(getURL(url,
+  raw_html <- read_html(getURL(url1,
                                .encoding = "UTF-8",
                                .opts = list(followlocation = FALSE)))
   # I have used an iteration to put all the links as a list. 
@@ -41,7 +42,7 @@ get_population_ranking <- function(base_url){
                                   gsub, pattern = "^\\W+", replacement = '')
   return(raw_data)
 }
-country_pop <- get_population_ranking(base_url)
+country_pop <- get_population_ranking()
 
 # Q1 - Testing without function -------------------------------------------
 # In this section, I created the code and wanted to test whether it is working
@@ -50,9 +51,9 @@ country_pop <- get_population_ranking(base_url)
 #                       "country" = "//td[@class='region']/a",
 #                       "value" = "//tr/td[3]",
 #                       "rank" = "//tr/td[1]")
-#url = str_c(base_url, "fields/335rank.html")
+#url1 = str_c(base_url, "fields/335rank.html")
 
-#raw_html <- read_html(getURL(url,
+#raw_html <- read_html(getURL(url1,
 #                             .encoding = "UTF-8",
 #                             .opts = list(followlocation = FALSE)))
 
@@ -165,23 +166,23 @@ country_pop_land <- get_population_density()
 # Q4 - Answer -------------------------------------------------------------
 #' Question 4: Get All Provided Rankings
 #'
-#' @return
+#' @return A tidy dataframe including 2 columns.
+#'   "characteristic" including all the characteristics for all countries.
+#'   "characteristic_link" including the additional link to the respective page.
 #' @export
 #'
 #' @examples
 get_rankings <- function(){
-  url3 <- "https://www.cia.gov/library/publications/the-world-factbook/docs/rankorderguide.html"
+  url4 <- "https://www.cia.gov/library/publications/the-world-factbook/docs/rankorderguide.html"
   xpath <- c("characteristic" = "//div[@class='field_label']/strong/a",
              "characteristic_link" = "//div[@class='field_label']/strong/a/@href")
-  ranking_html <- read_html(getURL(url3,
+  ranking_html <- read_html(getURL(url4,
                                    .encoding = "UTF-8",
                                    .opts = list(followlocation = FALSE)))
   ranking_list <- vector("list", length(xpath))
   for(i in seq_along(xpath)) {
     ranking_list[[i]] <- xml_find_all(ranking_html, xpath[i])
   }
-  View(ranking_list)
-  
   ranking_data <- data.frame(characteristic = sapply(ranking_list[1], xml_text),
                              characteristic_link = c(sapply(ranking_list[2], xml_text)))
   ranking_data$characteristic_link <- lapply(ranking_data$characteristic_link, 
@@ -195,44 +196,75 @@ get_rankings <- function(){
 ranking_data <- get_rankings()
 
 # Q4 - Testing without function -------------------------------------------
-url3 <- "https://www.cia.gov/library/publications/the-world-factbook/docs/rankorderguide.html"
-xpath <- c("characteristic" = "//div[@class='field_label']/strong/a",
-           "characteristic_link" = "//div[@class='field_label']/strong/a/@href")
-ranking_html <- read_html(getURL(url3,
-                             .encoding = "UTF-8",
-                             .opts = list(followlocation = FALSE)))
-ranking_list <- vector("list", length(xpath))
-for(i in seq_along(xpath)) {
-  ranking_list[[i]] <- xml_find_all(ranking_html, xpath[i])
-}
-View(ranking_list)
+#url4 <- "https://www.cia.gov/library/publications/the-world-factbook/docs/rankorderguide.html"
+#xpath <- c("characteristic" = "//div[@class='field_label']/strong/a",
+#           "characteristic_link" = "//div[@class='field_label']/strong/a/@href")
+#ranking_html <- read_html(getURL(url4,
+#                             .encoding = "UTF-8",
+#                             .opts = list(followlocation = FALSE)))
+#ranking_list <- vector("list", length(xpath))
+#for(i in seq_along(xpath)) {
+#  ranking_list[[i]] <- xml_find_all(ranking_html, xpath[i])
+#}
+#View(ranking_list)
+#
+#ranking_data <- data.frame(characteristic = sapply(ranking_list[1], xml_text),
+#                       characteristic_link = c(sapply(ranking_list[2], xml_text)))
+#ranking_data$characteristic_link <- lapply(ranking_data$characteristic_link, 
+#                                gsub, pattern = "^\\W+", replacement = '')
+#ranking_data$characteristic <- lapply(ranking_data$characteristic,
+#                                      gsub, pattern = "\\:$", replacement = "")
+#ranking_data$characteristic <- tolower(ranking_data$characteristic)
+#View(ranking_data)
 
-ranking_data <- data.frame(characteristic = sapply(ranking_list[1], xml_text),
-                       characteristic_link = c(sapply(ranking_list[2], xml_text)))
-ranking_data$characteristic_link <- lapply(ranking_data$characteristic_link, 
-                                gsub, pattern = "^\\W+", replacement = '')
-ranking_data$characteristic <- lapply(ranking_data$characteristic,
-                                      gsub, pattern = "\\:$", replacement = "")
-ranking_data$characteristic <- tolower(ranking_data$characteristic)
-View(ranking_data)
 
+# Q5.a - Answer -------------------------------------------------------------
 #' Question 5 - Part 1: Get Ranking
 #'
 #' @param url The url of the ranking
 #' @param characteristic What this ranking is about
 #'
-#' @return
+#' @return A tidy dataframe including 4 columns.
+#'   "country_link" contains the link to each country in the webpage.
+#'   "country" contains the name of the respective country.
+#'   "population" contains the characteristic of each country which we have
+#'     identified in the input for the function.
+#'   "rank.population" contains the respective rankd of each country based on
+#'     population.
 #' @export
 #'
 #' @examples
-get_ranking <- function(url = "fields/335rank.html", characteristic = "population"){
+get_ranking <- function(url, characteristic){
   xpath_expressions <- c("country_link" = "//td[@class='region']/a/@href",
                          "country" = "//td[@class='region']/a",
                          "value" = "//tr/td[3]",
                          "rank" = "//tr/td[1]")
-  #...
+  url4 = str_c(base_url, url)
+  raw_html <- read_html(getURL(url4,
+                               .encoding = "UTF-8",
+                               .opts = list(followlocation = FALSE)))
+  raw_list <- vector("list", length(xpath_expressions))
+  for(i in seq_along(xpath_expressions)) {
+    raw_list[[i]] <- xml_find_all(raw_html, xpath_expressions[i])
+  }
+  country_data <- data.frame(country_link = sapply(raw_list[1], xml_text),
+                         country = c(sapply(raw_list[2], xml_text)), 
+                         characteristic = c(sapply(raw_list[3], xml_text)),
+                         rank = c(sapply(raw_list[4],xml_text)))
+  country_data$country_link <- lapply(country_data$country_link, 
+                                  gsub, pattern = "^\\W+", replacement = '')
+  country_data <- rename(country_data, !!characteristic:=characteristic)
+  View(country_data)
+  return(country_data)
 }
+country_data <- get_ranking("fields/335rank.html", "population")
+# I have desgined the function slightly different, in the way that we give
+#  inputs. In this way, I have tested that if we use other link such as
+#  "fields/279rank.html" and "area" as another characteristic, the ranking
+#  table will work correctly.
 
+
+# Q5.b - Answer -----------------------------------------------------------
 #' Question 5 - Part 2: Get Country Characteristic
 #'
 #' @param country_link 
