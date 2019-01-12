@@ -239,25 +239,25 @@ get_ranking <- function(url, characteristic){
                          "country" = "//td[@class='region']/a",
                          "value" = "//tr/td[3]",
                          "rank" = "//tr/td[1]")
-  url4 = str_c(base_url, url)
-  raw_html <- read_html(getURL(url4,
+  url51 = str_c(base_url, url)
+  raw_html <- read_html(getURL(url51,
                                .encoding = "UTF-8",
                                .opts = list(followlocation = FALSE)))
   raw_list <- vector("list", length(xpath_expressions))
   for(i in seq_along(xpath_expressions)) {
     raw_list[[i]] <- xml_find_all(raw_html, xpath_expressions[i])
   }
-  country_data <- data.frame(country_link = sapply(raw_list[1], xml_text),
+  country_ranking <- data.frame(country_link = sapply(raw_list[1], xml_text),
                          country = c(sapply(raw_list[2], xml_text)), 
                          characteristic = c(sapply(raw_list[3], xml_text)),
                          rank = c(sapply(raw_list[4],xml_text)))
-  country_data$country_link <- lapply(country_data$country_link, 
+  country_ranking$country_link <- lapply(country_ranking$country_link, 
                                   gsub, pattern = "^\\W+", replacement = '')
-  country_data <- rename(country_data, !!characteristic:=characteristic)
-  View(country_data)
-  return(country_data)
+  country_ranking <- rename(country_ranking, !!characteristic:=characteristic)
+  View(country_ranking)
+  return(country_ranking)
 }
-country_data <- get_ranking("fields/335rank.html", "population")
+country_ranking <- get_ranking("fields/335rank.html", "population")
 # I have desgined the function slightly different, in the way that we give
 #  inputs. In this way, I have tested that if we use other link such as
 #  "fields/279rank.html" and "area" as another characteristic, the ranking
@@ -267,19 +267,43 @@ country_data <- get_ranking("fields/335rank.html", "population")
 # Q5.b - Answer -----------------------------------------------------------
 #' Question 5 - Part 2: Get Country Characteristic
 #'
-#' @param country_link 
-#' @param xpath_field_id 
-#' @param item 
+#' @param country_link is the dataframe from which the links from countries will
+#'   be read. In this case, the output from the previous function, namely 5.a
+#'   is used as the input. 
+#' @param xpath_field_id is the characteristic that we want to see in our output.
+#'   In this case we use the "field-area"
+#' @param item is the item that is used in each characteristic for every
+#'   country.
 #'
-#' @return
+#' @return A character vector of all countries' characteristic.
 #' @export
 #'
 #' @examples
-get_country_characteristic <- function(country_link, xpath_field_id = "field-area", item = 2){
+get_country_characteristic <- function(country_link, xpath_field_id, item){
   #update the xpath and use similar code other than that
+  xpath <- str_c("//div[@id='",xpath_field_id,"']/div[",item,"]/span[2]")
+  #download the file from country_link and execute the xpath query
+  url52 = str_c(base_url, country_link$country_link)
+  char_data <- c()
+  for(i in 1:length(country_link$country_link)) {
+    raw_html5 <- read_html(download_html(url52[i]))
+    #    raw_html5 <- read_html(getURL(url52[i],
+    #                                  .encoding = "UTF-8",
+    #                                  .opts = list(followlocation = FALSE)))
+    # Apparently, the speed of retrieving the data with the reading function used is
+    #  better than then one above. Thay is why I have changed it to
+    #  read_html(download_html)
+    raw_list_land <- xml_find_all(raw_html5, xpath)
+    char_data[i] <- xml_text(raw_list_land)
+  }
+  return(char_data)
 }
+country_char <- get_country_characteristic(country_ranking, "field-area", 2)
+# As an example, I used "item = 1" to see whether the data will be read
+#  correctly and it was indeed. When we change the item to 1, the "total area"
+#  will be read which is the correct answer.
 
-
+# Q6 - Answer -------------------------------------------------------------
 #' Question 6: Combine Rankings
 #'
 #' @param rankings Rankings from get_rankings (or a selection thereof)
