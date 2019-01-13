@@ -195,7 +195,7 @@ get_rankings <- function(){
 }
 ranking_data <- get_rankings()
 
-# Q4 - Testing without function -------------------------------------------
+s# Q4 - Testing without function -------------------------------------------
 #url4 <- "https://www.cia.gov/library/publications/the-world-factbook/docs/rankorderguide.html"
 #xpath <- c("characteristic" = "//div[@class='field_label']/strong/a",
 #           "characteristic_link" = "//div[@class='field_label']/strong/a/@href")
@@ -227,14 +227,14 @@ ranking_data <- get_rankings()
 #' @return A tidy dataframe including 4 columns.
 #'   "country_link" contains the link to each country in the webpage.
 #'   "country" contains the name of the respective country.
-#'   "population" contains the characteristic of each country which we have
+#'   "population" contains the characteristic of each country which I have
 #'     identified in the input for the function.
 #'   "rank.population" contains the respective rankd of each country based on
 #'     population.
 #' @export
 #'
 #' @examples
-get_ranking <- function(url, characteristic){
+get_ranking <- function(url, char){
   xpath_expressions <- c("country_link" = "//td[@class='region']/a/@href",
                          "country" = "//td[@class='region']/a",
                          "value" = "//tr/td[3]",
@@ -253,15 +253,42 @@ get_ranking <- function(url, characteristic){
                          rank = c(sapply(raw_list[4],xml_text)))
   country_ranking$country_link <- lapply(country_ranking$country_link, 
                                   gsub, pattern = "^\\W+", replacement = '')
+  country_ranking <- rename(country_ranking, !!char := characteristic)
+#  country_ranking <- rename(country_ranking, !!rank.char := rank)
+#  View(country_ranking)
+  return(country_ranking)
+}
+country_ranking <- get_ranking("fields/335rank.html", "population")
+# I have desgined the function slightly different, in the way that I give
+#  inputs. In this way, I have tested that if I use other link such as
+#  "fields/279rank.html" and "area" as another characteristic, the ranking
+#  table will work correctly.
+
+
+get_ranking <- function(url, characteristic){
+  xpath_expressions <- c("country_link" = "//td[@class='region']/a/@href",
+                         "country" = "//td[@class='region']/a",
+                         "value" = "//tr/td[3]",
+                         "rank" = "//tr/td[1]")
+  url51 = str_c(base_url, url)
+  raw_html <- read_html(getURL(url51,
+                               .encoding = "UTF-8",
+                               .opts = list(followlocation = FALSE)))
+  raw_list <- vector("list", length(xpath_expressions))
+  for(i in seq_along(xpath_expressions)) {
+    raw_list[[i]] <- xml_find_all(raw_html, xpath_expressions[i])
+  }
+  country_ranking <- data.frame(country_link = sapply(raw_list[1], xml_text),
+                                country = c(sapply(raw_list[2], xml_text)), 
+                                characteristic = c(sapply(raw_list[3], xml_text)),
+                                rank = c(sapply(raw_list[4],xml_text)))
+  country_ranking$country_link <- lapply(country_ranking$country_link, 
+                                         gsub, pattern = "^\\W+", replacement = '')
   country_ranking <- rename(country_ranking, !!characteristic:=characteristic)
   View(country_ranking)
   return(country_ranking)
 }
-country_ranking <- get_ranking("fields/335rank.html", "population")
-# I have desgined the function slightly different, in the way that we give
-#  inputs. In this way, I have tested that if we use other link such as
-#  "fields/279rank.html" and "area" as another characteristic, the ranking
-#  table will work correctly.
+country_ranking <- get_ranking("fields/343rank.html", "median age")
 
 
 # Q5.b - Answer -----------------------------------------------------------
@@ -300,8 +327,8 @@ get_country_characteristic <- function(country_link, xpath_field_id, item){
 }
 country_char <- get_country_characteristic(country_ranking, "field-area", 2)
 # As an example, I used "item = 1" to see whether the data will be read
-#  correctly and it was indeed. When we change the item to 1, the "total area"
-#  will be read which is the correct answer.
+#  correctly and it was the case indeed. When I changed the item to 1, the 
+#  "total area" will be read which is the correct answer.
 
 # Q6 - Answer -------------------------------------------------------------
 #' Question 6: Combine Rankings
@@ -313,8 +340,40 @@ country_char <- get_country_characteristic(country_ranking, "field-area", 2)
 #'
 #' @examples
 combine_rankings <- function(rankings){
-  
+  raw_ranking <- c()
+  for (i in 1:2){
+    raw_ranking[i] <- get_ranking(rankings$characteristic_link[i], rankings$characteristic[i])
+#    data[i] <- data.frame(raw_ranking[i])
+  }
+  return(data)
+}
+final_data <- combine_rankings(ranking_data)
+
+
+variables = 4
+raw_ranking <- matrix(ncol=variables, nrow=length(ranking_data))
+#raw_ranking <- vector("list", length(ranking_data))
+for (i in 1:3){
+  raw_ranking[i] <- get_ranking(ranking_data$characteristic_link[i], ranking_data$characteristic[i])
+  assign(paste('X',i,sep=''),raw_ranking[i])
 }
 
 
 
+raw_list <- vector("list", length(xpath_expressions))
+for(i in seq_along(xpath_expressions)) {
+  raw_list[[i]] <- xml_find_all(raw_html, xpath_expressions[i])
+}
+country_ranking <- data.frame(country_link = sapply(raw_list[1], xml_text),
+                              country = c(sapply(raw_list[2], xml_text)), 
+                              characteristic = c(sapply(raw_list[3], xml_text)),
+                              rank = c(sapply(raw_list[4],xml_text)))
+country_ranking$country_link <- lapply(country_ranking$country_link, 
+                                       gsub, pattern = "^\\W+", replacement = '')
+country_ranking <- rename(country_ranking, !!char := characteristic)
+#  country_ranking <- rename(country_ranking, !!rank.char := rank)
+
+data[[i]] <- c()
+for (i in 1:length(rankings$characteristic)){
+  get_ranking(rankings$characteristic_link, rankings$characteristic)
+}
