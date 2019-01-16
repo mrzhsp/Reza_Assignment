@@ -271,36 +271,6 @@ combine_rankings <- function(rankings) {
   return(total_rankings)
 }
 final_data <- combine_rankings(ranking_data)
+View(final_data)
 
-
-variables <- 4
-raw_ranking <- matrix(ncol = variables, nrow = length(ranking_data))
-# raw_ranking <- vector("list", length(ranking_data))
-for (i in 1:3) {
-  raw_ranking[i] <- get_ranking(ranking_data$characteristic_link[i], ranking_data$characteristic[i])
-  assign(paste("X", i, sep = ""), raw_ranking[i])
-}
-
-
-
-raw_list <- vector("list", length(xpath_expressions))
-for (i in seq_along(xpath_expressions)) {
-  raw_list[[i]] <- xml_find_all(raw_html, xpath_expressions[i])
-}
-country_ranking <- data.frame(
-  country_link = sapply(raw_list[1], xml_text),
-  country = c(sapply(raw_list[2], xml_text)),
-  characteristic = c(sapply(raw_list[3], xml_text)),
-  rank = c(sapply(raw_list[4], xml_text))
-)
-country_ranking$country_link <- lapply(country_ranking$country_link,
-  gsub,
-  pattern = "^\\W+", replacement = ""
-)
-country_ranking <- rename(country_ranking, !!char := characteristic)
-#  country_ranking <- rename(country_ranking, !!rank.char := rank)
-
-data[[i]] <- c()
-for (i in 1:length(rankings$characteristic)) {
-  get_ranking(rankings$characteristic_link, rankings$characteristic)
-}
+# The End.
