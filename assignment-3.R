@@ -273,4 +273,4 @@ combine_rankings <- function(rankings) {
 final_data <- combine_rankings(ranking_data)
 View(final_data)
 
-# The End.
+# The End...
